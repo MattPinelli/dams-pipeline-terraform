@@ -1,9 +1,9 @@
 # Specify the S3 backend details
 terraform {
   backend "s3" {
-    bucket = "lrn-argus-pipeline-tfstate"
-    key    = "terraform.tfstate"
-    region = "us-east-1"
+    bucket = "${var.state_bucket}"
+    key    = "${var.state_key}"
+    region = "${var.aws_region}"
   }
 }
 

@@ -57,3 +57,13 @@ variable "aws_region" {
   description = "AWS Region"
   default     = "us-east-1"
 }
+
+variable "state_bucket" {
+  description = "Name of the S3 bucket to store state"
+  default     = "lrn-argus-pipeline-tfstate"
+}
+
+variable "state_key" {
+  description = "Name of the key to store state"
+  default     = "terraform.tfstate"
+}
