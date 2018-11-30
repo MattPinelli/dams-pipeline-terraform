@@ -52,7 +52,7 @@ PATTERN
 resource "aws_cloudwatch_event_target" "repo-notification-target" {
   rule     = "${aws_cloudwatch_event_rule.repo-notification.name}"
   arn      = "${aws_codepipeline.pipeline.arn}"
-  role_arn = "${aws_iam_role.codepipeline.arn}"
+  role_arn = "${aws_iam_role.codecommit_trigger.arn}"
 }
 
 resource "aws_codebuild_project" "plan" {
@@ -232,6 +232,24 @@ data "aws_iam_policy_document" "codepipeline_assume_policy" {
   }
 }
 
+resource "aws_iam_role" "codecommit_trigger" {
+  name               = "${var.name}-codecommit-trigger"
+  description        = "Allows CodeCommit event to execute CodePipeline"
+  assume_role_policy = "${data.aws_iam_policy_document.codecommit_assume_policy.json}"
+}
+
+data "aws_iam_policy_document" "codecommit_assume_policy" {
+  statement {
+    effect  = "Allow"
+    actions = ["sts:AssumeRole"]
+
+    principals {
+      type        = "Service"
+      identifiers = ["events.amazonaws.com"]
+    }
+  }
+}
+
 ###
 ### IAM Minimal Policies
 ###
@@ -284,6 +302,7 @@ data "aws_iam_policy_document" "codebuild" {
       "ecs:*",
       "iam:*",
       "codecommit:*",
+      "ssm:GetParameters",
     ]
 
     resources = ["*"]
@@ -319,6 +338,7 @@ data "aws_iam_policy_document" "codepipeline" {
       "ecs:*",
       "iam:*",
       "codecommit:*",
+      "ssm:GetParameters",
     ]
 
     resources = ["*"]
@@ -343,6 +363,20 @@ data "aws_iam_policy_document" "artifacts" {
   }
 }
 
+data "aws_iam_policy_document" "codecommit_trigger" {
+  statement {
+    effect = "Allow"
+
+    actions = [
+      "codepipeline:StartPipelineExecution",
+    ]
+
+    resources = [
+      "${aws_codepipeline.pipeline.arn}",
+    ]
+  }
+}
+
 ##
 ## IAM Policy
 ##
@@ -363,4 +397,10 @@ resource "aws_iam_role_policy" "attach_codepipeline" {
   name_prefix = "${var.name}-codepipeline-"
   role        = "${aws_iam_role.codepipeline.id}"
   policy      = "${data.aws_iam_policy_document.codepipeline.json}"
+}
+
+resource "aws_iam_role_policy" "attach_codecommit_trigger" {
+  name   = "execute-${var.name}-pipeline"
+  role   = "${aws_iam_role.codecommit_trigger.id}"
+  policy = "${data.aws_iam_policy_document.codecommit_trigger.json}"
 }
