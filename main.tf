@@ -1,3 +1,12 @@
+# Specify the S3 backend details
+terraform {
+  backend "s3" {
+    bucket = "lrn-argus-tfstate"
+    key    = "terraform.tfstate"
+    region = "us-east-1"
+  }
+}
+
 resource "aws_codecommit_repository" "dams" {
   repository_name = "${var.account_name}-dams"
   description     = "DAMS repository in AWS"
