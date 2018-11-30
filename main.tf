@@ -1,3 +1,12 @@
+# Specify the S3 backend details
+terraform {
+  backend "s3" {
+    bucket = "${var.state_bucket}"
+    key    = "${var.state_key}"
+    region = "${var.aws_region}"
+  }
+}
+
 resource "aws_codecommit_repository" "dams" {
   repository_name = "${var.account_name}-dams"
   description     = "DAMS repository in AWS"
