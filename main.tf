@@ -312,6 +312,7 @@ data "aws_iam_policy_document" "codebuild" {
       "iam:*",
       "codecommit:*",
       "ssm:GetParameters",
+      "ecr:CreateRepository",
     ]
 
     resources = ["*"]
